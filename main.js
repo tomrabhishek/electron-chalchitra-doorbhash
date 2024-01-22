@@ -29,8 +29,21 @@ app.whenReady().then(() => {
     require('electron-reloader')(module);
   } catch {}
   // Option 1: Uses Webtag and load a custom html file with external content
-  // mainWindow.loadFile("index.html");
-  mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam")
+  mainWindow.webContents.session.webRequest.onHeadersReceived(
+    { urls: ['*://*/*'] },
+    (details, callback) => {
+      const responseHeaders = Object.assign({}, details.responseHeaders);
+
+      if (responseHeaders['X-Frame-Options'] || responseHeaders['x-frame-options']) {
+        delete responseHeaders['X-Frame-Options'];
+        delete responseHeaders['x-frame-options'];
+      }
+
+      callback({ cancel: false, responseHeaders });
+    }
+  );
+  mainWindow.loadFile("index.html");
+  // mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam")
   mainWindow.webContents.openDevTools();
 
   // createOverlayDrawingWindow();

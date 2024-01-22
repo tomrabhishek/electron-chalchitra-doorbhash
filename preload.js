@@ -26,10 +26,12 @@ contextBridge.exposeInMainWorld('api', {
 });
 
 window.addEventListener("DOMContentLoaded", () => {
- const screen_share = document.querySelector("[jsname='hNGZQc']");
+//  const screen_share = document.querySelector("[jsname='hNGZQc']");
+const screen_share = document.querySelector(".VfPpkd-LgbsSe");
+
 //  const screenShare = document.qu
  const mute = document.querySelector("[jsname='Dg9Wp']");
- console.log(document);
+ console.log(document.getElementById("webview"));
  console.log(screen_share);
 
 //  const sendButtonClickEvent = async () => {
@@ -39,7 +41,7 @@ window.addEventListener("DOMContentLoaded", () => {
 //  }
 //  sendButtonClickEvent();
 
- screen_share.addEventListener("change", (event) => {
+ screen_share.addEventListener("click", (event) => {
   console.log(event);
   ipcRenderer.send("share-screen");
   sendButtonClickEvent();
