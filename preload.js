@@ -5,8 +5,19 @@ contextBridge.exposeInMainWorld('versions', {
   chrome: () => process.versions.chrome,
   electron: () => process.versions.electron,
   ping: () => ipcRenderer.invoke('ping'),
+
   // we can also expose variables, not just functions
 })
+
+contextBridge.exposeInMainWorld('electronApi', {
+	main: {
+    isOSX: () => process.platform === 'darwin',
+		isWindows: () => process.platform === 'win32',
+		openScreenSecurity: () => ipcRenderer.invoke('electronMain:openScreenSecurity'),
+		getScreenAccess: () => ipcRenderer.invoke('electronMain:getScreenAccess'),
+		getScreenSources: () => ipcRenderer.invoke('electronMain:screen:getSources'),
+	}
+});
 
 contextBridge.exposeInMainWorld('api', {
   sendToMain: (channel, data) => {
@@ -14,12 +25,34 @@ contextBridge.exposeInMainWorld('api', {
   },
 });
 
-
 window.addEventListener("DOMContentLoaded", () => {
  const screen_share = document.querySelector("[jsname='hNGZQc']");
+//  const screenShare = document.qu
+ const mute = document.querySelector("[jsname='Dg9Wp']");
+ console.log(document);
  console.log(screen_share);
- screen_share.addEventListener("click", () => {
+
+//  const sendButtonClickEvent = async () => {
+//   console.log('sending event from preload to main');
+//   const result = await ipcRenderer.invoke('button-clicked');
+//   console.log(result);
+//  }
+//  sendButtonClickEvent();
+
+ screen_share.addEventListener("change", (event) => {
+  console.log(event);
+  ipcRenderer.send("share-screen");
+  sendButtonClickEvent();
   console.log("clicked");
- });;
+ });
 });
 
+ipcRenderer.on('SEND_SCREEN_SHARE_SOURCES', async (event, sources) => {
+  const selectContainer = window.document.getElementById('screen-share-select');
+  shareSourceList = sources;
+  sources.forEach(obj => {
+    const optionElement = document.createElement('option');
+    optionElement.innerText = `${obj.name}`;
+    selectContainer.appendChild(optionElement);
+  });
+})

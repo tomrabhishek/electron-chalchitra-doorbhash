@@ -1,8 +1,9 @@
 // Electron
-const { app, Menu, ipcMain } = require("electron");
+const { app, Menu, ipcMain, screen, systemPreferences } = require("electron");
+const util = require("electron-util");
 const { desktopCapturer, BrowserWindow, BrowserView } = require('electron');
-const fs = require('fs-extra');
-const appName = app.getName();
+const socket = require('socket.io-client')('http://localhost:3000');
+const IS_OSX = process.platform === 'darwin';
 
 // const path = require('path');
 // // Get app directory
@@ -30,8 +31,37 @@ app.whenReady().then(() => {
   // Option 1: Uses Webtag and load a custom html file with external content
   // mainWindow.loadFile("index.html");
   mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam")
-
   mainWindow.webContents.openDevTools();
+
+  // createOverlayDrawingWindow();
+
+
+
+//   // annotations
+//   var robot = require("robotjs");
+// robot.setMouseDelay(2);
+
+// var twoPI = Math.PI * 2.0;
+// var screenSize = robot.getScreenSize();
+// var height = (screenSize.height / 2) - 10;
+// var width = screenSize.width;
+
+// for (var x = 0; x < width; x++)
+// {
+// 	y = height * Math.sin((twoPI * x) / width) + height;
+// 	robot.moveMouse(x, y);
+// }
+// // Type "Hello World".
+// robot.typeString("Hello World");
+
+// // Press enter.
+// robot.keyTap("enter");
+// var mouse = robot.getMousePos();
+
+// // Get pixel color in hex format.
+// var hex = robot.getPixelColor(mouse.x, mouse.y);
+// console.log("#" + hex + " at x:" + mouse.x + " y:" + mouse.y);
+
 
 
   // ipcMain.on('execute-in-webview', (event, code) => {
@@ -73,6 +103,13 @@ app.whenReady().then(() => {
   //   }
   // `);
 
+  ipcMain.handle('button-clicked', (event) => {
+    // console.log(event);
+    console.log('Recieved event from preload');
+    return 'Event from main'
+    // Handle the data as needed
+  });
+
 
   // Menu (for standard keyboard shortcuts)
   const menu = require("./src/menu");
@@ -84,9 +121,72 @@ app.whenReady().then(() => {
   require("./src/print");
 });
 
+
+function createOverlayDrawingWindow() {
+  app.dock.hide()
+  fixedWindow = new BrowserWindow({
+    width: 100,
+    height: 100,
+    resizable: false,
+    movable: true,
+    focusable: false,
+    alwaysOnTop: true,
+    transparent:true,
+    show: true,
+  })
+  console.log("loaded")
+  console.log("not visible")
+  // if (!fixedWindow.isVisible()) {
+  //   console.log("visible")
+  //   app.dock.hide();
+  //   fixedWindow.showInactive();
+  // }
+  
+  fixedWindow.setAlwaysOnTop(true, "floating",1);
+  fixedWindow.setVisibleOnAllWorkspaces(true);
+  fixedWindow.loadFile('draw.html');
+
+  const mainScreen = screen.getPrimaryDisplay();
+  const { width, height } = mainScreen.workAreaSize;
+  fixedWindow.setPosition(width - 200, 0);  // Adjust the position as needed
+  console.log(fixedWindow.getPosition());
+  fixedWindow.on('closed', function () {
+    fixedWindow = null;
+  })
+}
+
+
+socket.on('drawing', (data) => {
+  // Update the position of the fixed window when socket data is received
+  updateFixedWindowPosition(data);
+});
+
+// Function to update the position of fixedWindow
+function updateFixedWindowPosition(data) {
+  if (fixedWindow) {
+      fixedWindow.setPosition(data.x, data.y);
+  }
+}
+
+
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+ipcMain.handle('electronMain:openScreenSecurity', () => util.openSystemPreferences('security', 'Privacy_ScreenCapture'));
+ipcMain.handle('electronMain:getScreenAccess', () => !IS_OSX || systemPreferences.getMediaAccessStatus('screen') === 'granted');
+ipcMain.handle('electronMain:screen:getSources', () => {
+    return desktopCapturer.getSources({types: ['window', 'screen']}).then(async sources => {
+        return sources.map(source => {
+            source.thumbnailURL = source.thumbnail.toDataURL();
+            return source;
+        });
+    });
+});
+
+ipcMain.on('share-screen', (events) => {
+  console.log(events);
 });
