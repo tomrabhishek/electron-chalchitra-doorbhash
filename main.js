@@ -82,7 +82,8 @@ app.whenReady().then(() => {
           // console.log(selectedSource, "girsahgbqreugbuq");
           waitForValue((value)=> {
             console.log(value);
-            callback({video:sources[0],enableLocalEcho:false})
+            const selectedScreen = sources.find(source => source.id === value)
+            callback({video:selectedScreen,enableLocalEcho:false})
           });
           
         }).catch((error) => {
