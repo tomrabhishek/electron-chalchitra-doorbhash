@@ -1,9 +1,9 @@
 // Electron
-const { app, Menu, ipcMain, screen, systemPreferences } = require("electron");
-const util = require("electron-util");
+const { app, Menu, ipcMain } = require("electron");
+// const util = require("electron-util");
 const { desktopCapturer, BrowserWindow, BrowserView } = require('electron');
-const socket = require('socket.io-client')('http://localhost:3000');
-const IS_OSX = process.platform === 'darwin';
+// const socket = require('socket.io-client')('http://localhost:3000');
+// const IS_OSX = process.platform === 'darwin';
 // const fs = require('fs-extra');
 // const appName = app.getName();
 
@@ -27,59 +27,69 @@ app.whenReady().then(() => {
   ipcMain.handle('ping', () => 'pong');
   const window = require("./src/window");
   mainWindow = window.createBrowserWindow(app);
-  try {
-    require('electron-reloader')(module);
-  } catch {}
+  // try {
+  //   require('electron-reloader')(module);
+  // } catch {}
   // Option 1: Uses Webtag and load a custom html file with external content
-  mainWindow.webContents.session.webRequest.onHeadersReceived(
-    { urls: ['*://*/*'] },
-    (details, callback) => {
-      const responseHeaders = Object.assign({}, details.responseHeaders);
-      if (responseHeaders['X-Frame-Options'] || responseHeaders['x-frame-options']) {
-        delete responseHeaders['X-Frame-Options'];
-        delete responseHeaders['x-frame-options'];
-      }
 
-      callback({ cancel: false, responseHeaders });
-    }
-  );
+  // mainWindow.webContents.session.webRequest.onHeadersReceived(
+  //   { urls: ['*://*/*'] },
+  //   (details, callback) => {
+  //     const responseHeaders = Object.assign({}, details.responseHeaders);
+  //     if (responseHeaders['X-Frame-Options'] || responseHeaders['x-frame-options']) {
+  //       delete responseHeaders['X-Frame-Options'];
+  //       delete responseHeaders['x-frame-options'];
+  //     }
 
-  // mainWindow.loadFile("index.html");
-  mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam");
-  
+  //     callback({ cancel: false, responseHeaders });
+  //   }
+  // );
+
+  mainWindow.loadFile("index.html");
+  // mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam");
+
   mainWindow.webContents.on("did-finish-load", async function() {
     // const sources = await desktopCapturer.getSources({ types: ["window", "screen"] });
     // console.log(sources);
     mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
         // if (permission === 'media') {
           // Handle media permission request
-          console.log(permission)
+          console.log(permission,"uguygbj")
           callback(true); // You might want to customize this based on your requirements
         // } else {
         //   callback(false);
         // }
       });
     mainWindow.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
-        desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
-            console.log(request,sources[0])
+        desktopCapturer.getSources({ types: ['window','screen'] }).then((sources) => {
+            // console.log(request,sources[0])
+            // console.log(sources);
+            console.log('requested sources....')
         //   mainWindow.webContents.send("screen-share",sources[0]);
+          mainWindow.webContents.send("show-popup", sources);
+          // console.log(selectedSource, "girsahgbqreugbuq");
           callback({video:sources[0],enableLocalEcho:false})
         }).catch((error) => {
           console.error('Error in getting sources:', error);
           callback({ video: null });
         });
+
+
       });
 });
-
   mainWindow.webContents.openDevTools();
-  mainWindow.webContents.on('did-finish-load', () => {
-    // Access the webview's document object after the webview has finished loading
-    const webViewContents = mainWindow.webContents;
-    webViewContents.executeJavaScript(`
-      const webViewDocument = document;
-      console.log('Document of webview:', webViewDocument);
-    `);
-  });
+
+function getSourceFromRender() {
+  ipcMain.on('get-source', (events, arg)=> {
+    console.log('from-rendereerr',arg);
+  })
+}
+getSourceFromRender();
+
+  // ipcMain.on('show-popup', (events) => { 
+  //   events.returnValue = 'show-popup-invoked from main'
+  // });
+
 
   // createOverlayDrawingWindow();
 
@@ -131,7 +141,6 @@ app.whenReady().then(() => {
 
 
   // Access the webview's webContents
-  const webContents = mainWindow.webContents;
   // console.log(webContents);
 
   // // Execute JavaScript inside the webview
@@ -151,12 +160,12 @@ app.whenReady().then(() => {
   //   }
   // `);
 
-  ipcMain.handle('button-clicked', (event) => {
-    // console.log(event);
-    console.log('Recieved event from preload');
-    return 'Event from main'
-    // Handle the data as needed
-  });
+  // ipcMain.handle('button-clicked', (event) => {
+  //   // console.log(event);
+  //   console.log('Recieved event from preload');
+  //   return 'Event from main'
+  //   // Handle the data as needed
+  // });
 
   // Menu (for standard keyboard shortcuts)
   const menu = require("./src/menu");
@@ -165,55 +174,21 @@ app.whenReady().then(() => {
   Menu.setApplicationMenu(builtMenu);
 
   // Print function (if enabled)
-  require("./src/print");
 });
 
 
-function createOverlayDrawingWindow() {
-  app.dock.hide()
-  fixedWindow = new BrowserWindow({
-    width: 100,
-    height: 100,
-    resizable: false,
-    movable: true,
-    focusable: false,
-    alwaysOnTop: true,
-    transparent:true,
-    show: true,
-  })
-  console.log("loaded")
-  console.log("not visible")
-  // if (!fixedWindow.isVisible()) {
-  //   console.log("visible")
-  //   app.dock.hide();
-  //   fixedWindow.showInactive();
-  // }
-  
-  fixedWindow.setAlwaysOnTop(true, "floating",1);
-  fixedWindow.setVisibleOnAllWorkspaces(true);
-  fixedWindow.loadFile('draw.html');
 
-  const mainScreen = screen.getPrimaryDisplay();
-  const { width, height } = mainScreen.workAreaSize;
-  fixedWindow.setPosition(width - 200, 0);  // Adjust the position as needed
-  console.log(fixedWindow.getPosition());
-  fixedWindow.on('closed', function () {
-    fixedWindow = null;
-  })
-}
-
-
-socket.on('drawing', (data) => {
-  // Update the position of the fixed window when socket data is received
-  updateFixedWindowPosition(data);
-});
+// socket.on('drawing', (data) => {
+//   // Update the position of the fixed window when socket data is received
+//   updateFixedWindowPosition(data);
+// });
 
 // Function to update the position of fixedWindow
-function updateFixedWindowPosition(data) {
-  if (fixedWindow) {
-      fixedWindow.setPosition(data.x, data.y);
-  }
-}
+// function updateFixedWindowPosition(data) {
+//   if (fixedWindow) {
+//       fixedWindow.setPosition(data.x, data.y);
+//   }
+// }
 
 
 // Quit when all windows are closed.
@@ -223,16 +198,14 @@ app.on("window-all-closed", () => {
   }
 });
 
-ipcMain.handle('electronMain:openScreenSecurity', () => util.openSystemPreferences('security', 'Privacy_ScreenCapture'));
-ipcMain.handle('electronMain:getScreenAccess', () => IS_OSX || systemPreferences.getMediaAccessStatus('screen') === 'granted');
-ipcMain.handle('electronMain:screen:getSources', () => {
-    return desktopCapturer.getSources({types: ['window', 'screen']}).then(async sources => {
-        return sources.map(source => {
-            source.thumbnailURL = source.thumbnail.toDataURL();
-            return source;
-        });
-    });
-});
-ipcMain.on('share-screen', (events) => {
-  console.log(events);
-});
+// ipcMain.handle('electronMain:openScreenSecurity', () => util.openSystemPreferences('security', 'Privacy_ScreenCapture'));
+// ipcMain.handle('electronMain:getScreenAccess', () => IS_OSX || systemPreferences.getMediaAccessStatus('screen') === 'granted');
+// ipcMain.handle('electronMain:screen:getSources', () => {
+//     return desktopCapturer.getSources({types: ['window', 'screen']}).then(async sources => {
+//         return sources.map(source => {
+//             source.thumbnailURL = source.thumbnail.toDataURL();
+//             return source;
+//         });
+//     });
+// });
+

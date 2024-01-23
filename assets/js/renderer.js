@@ -1,116 +1,127 @@
-const webview = document.querySelector("webview");
-
-// Electron experiments
-const iframe = document.getElementById("webview");
-console.log(iframe);
-const screen_share = document.querySelector(".VfPpkd-LgbsSe");
-
 // const information = document.getElementById('info')
 // information.innerText = `  preload sending versions.chrome() (v${versions.chrome()})`;
 
-const func = async () => {
-  const response = await window.versions.ping()
-  console.log(response) // prints out 'pong'
-}
+// const { ipcRenderer, contextBridge } = require("electron");
 
-func()
+// const func = async () => {
+//   const response = await window.versions.ping()
+//   console.log(response) // prints out 'pong'
+// }
 
-const main = window.electronApi.main;
+// func()
 
-const video = document.querySelector('#stream');
-const startBtn = document.querySelector('#start_share');
-const stopBtn = document.querySelector('#stop_share');
 const openSettingsBtn = document.querySelector('#system-preferences');
 const screenPicker = document.querySelector('#electron-screen-picker');
 
-const displayMediaOptions = {
-	video: {
-		displaySurface: "window",
-	},
-	audio: false,
-};
+// const displayMediaOptions = {
+// 	video: {
+// 		displaySurface: "window",
+// 	},
+// 	audio: false,
+// };
 
-navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
+window.api.source(0);
+// console.log(window.api.showPopup());
+// console.log(window.api.showPopup())
+
+
+window.api.showPopup((sources) => {
+	// console.log(sources);
+	let source;
+	screenPickerShow(sources, async (id) => {
+		console.log(id);
+		try {
+			source = sources.find(source => source.id === id);
+			if (!source) {
+				return reject('none');
+			}
+		}
+		catch (err) {
+			reject(err);
+		}
+	}, {});
+	
+	return source;
+})
 
 // Set event listeners for the start, stop and openSettings buttons
-startBtn.addEventListener("click", startCapture, false);
-stopBtn.addEventListener("click", stopCapture, false);
-openSettingsBtn.addEventListener("click", openPreferences, false);
+// openSettingsBtn.addEventListener("click", openPreferences, false);
 
-async function startCapture() {
-	try {
-		video.srcObject = await navigator.mediaDevices.getDisplayMedia(
-			displayMediaOptions
-		);
-		startBtn.classList = 'hidden';
-		stopBtn.classList = '';
-	} catch (err) {
-		console.error(err);
-	}
-}
+// async function startCapture() {
+// 	try {
+// 		video.srcObject = await navigator.mediaDevices.getDisplayMedia(
+// 			displayMediaOptions
+// 		);
+// 		startBtn.classList = 'hidden';
+// 		stopBtn.classList = '';
+// 	} catch (err) {
+// 		console.error(err);
+// 	}
+// }
 
-function stopCapture(evt) {
-	if (!video.srcObject) return;
+// function stopCapture(evt) {
+// 	if (!video.srcObject) return;
 	
-	let tracks = video.srcObject.getTracks();
+// 	let tracks = video.srcObject.getTracks();
 
-	tracks.forEach((track) => track.stop());
-	video.srcObject = null;
-	startBtn.classList = '';
-	stopBtn.classList = 'hidden';
-}
+// 	tracks.forEach((track) => track.stop());
+// 	video.srcObject = null;
+// 	startBtn.classList = '';
+// 	stopBtn.classList = 'hidden';
+// }
 
-function openPreferences() {
-	main.openScreenSecurity();
-}
+// function openPreferences() {
+// 	main.openScreenSecurity();
+// }
 
 let screenPickerOptions = {
 	system_preferences: false
 };
 
-function getDisplayMedia() {
-	if (main.isOSX()) {
-		screenPickerOptions.system_preferences = true;
-	}
+// // function getDisplayMedia() {
+// // 	if (main.isOSX()) {
+// // 		screenPickerOptions.system_preferences = true;
+// // 	}
 
-	return new Promise(async (resolve, reject) => {
-		let has_access = await main.getScreenAccess();
-		if (!has_access) {
-			return reject('none');
-		}
+// // 	return new Promise(async (resolve, reject) => {
+// // 		let has_access = await main.getScreenAccess();
+// // 		if (!has_access) {
+// // 			return reject('none');
+// // 		}
 
-		try {
-			const sources = await main.getScreenSources();
-			screenPickerShow(sources, async (id) => {
-				try {
-					const source = sources.find(source => source.id === id);
-					if (!source) {
-						return reject('none');
-					}
+// // 		try {
+// // 			const sources = await main.getScreenSources();
+// // 			screenPickerShow(sources, async (id) => {
+// // 				try {
+// // 					const source = sources.find(source => source.id === id);
+// // 					if (!source) {
+// // 						return reject('none');
+// // 					}
 
-					const stream = await window.navigator.mediaDevices.getUserMedia({
-						audio: false,
-						video: {
-							mandatory: {
-								chromeMediaSource: 'desktop',
-								chromeMediaSourceId: source.id
-							}
-						}
-					});
-					resolve(stream);
-				}
-				catch (err) {
-					reject(err);
-				}
-			}, {});
-		}
-		catch (err) {
-			reject(err);
-		}
-	});
-}
+// // 					const stream = await window.navigator.mediaDevices.getUserMedia({
+// // 						audio: false,
+// // 						video: {
+// // 							mandatory: {
+// // 								chromeMediaSource: 'desktop',
+// // 								chromeMediaSourceId: source.id
+// // 							}
+// // 						}
+// // 					});
+// // 					resolve(stream);
+// // 				}
+// // 				catch (err) {
+// // 					reject(err);
+// // 				}
+// // 			}, {});
+// // 		}
+// // 		catch (err) {
+// // 			reject(err);
+// // 		}
+// // 	});
+// // }
 
 function screenPickerShow(sources, onselect) {
+	// console.log(sources);
 	const list = document.querySelector('#sources');
 	list.innerHTML = '';
 
