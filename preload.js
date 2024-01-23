@@ -13,7 +13,8 @@ const { contextBridge, ipcRenderer } = require("electron");
 const windowApi = {
   source: (source) => ipcRenderer.send("get-source", source),
   // showPopup: () => ipcRenderer.sendSync("show-popup")
-  showPopup: (callback) => ipcRenderer.on('show-popup', (_event, value) => callback(value))
+  showPopup: (callback) => ipcRenderer.on('show-popup', (_event, value) => callback(value)),
+  sourceScreen: (value) => ipcRenderer.send('source-screen', value)
 };
 contextBridge.exposeInMainWorld('api', windowApi);
 

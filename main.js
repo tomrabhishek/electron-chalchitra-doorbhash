@@ -45,6 +45,7 @@ app.whenReady().then(() => {
   //   }
   // );
 
+  let screenId;
   mainWindow.loadFile("index.html");
   // mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam");
 
@@ -61,23 +62,43 @@ app.whenReady().then(() => {
         // }
       });
     mainWindow.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
+      const waitForValue = (valueCallback) => {
+        ipcMain.on('source-screen', (_event, value) => {
+          console.log(value, 'Received value from source-screen event');
+          valueCallback(value);
+        });
+      };
+
         desktopCapturer.getSources({ types: ['window','screen'] }).then((sources) => {
+          sources.map(source => {
+                source.thumbnailURL = source.thumbnail.toDataURL();
+                return source;
+           });
             // console.log(request,sources[0])
             // console.log(sources);
             console.log('requested sources....')
         //   mainWindow.webContents.send("screen-share",sources[0]);
           mainWindow.webContents.send("show-popup", sources);
           // console.log(selectedSource, "girsahgbqreugbuq");
-          callback({video:sources[0],enableLocalEcho:false})
+          waitForValue((value)=> {
+            console.log(value);
+            callback({video:sources[0],enableLocalEcho:false})
+          });
+          
         }).catch((error) => {
           console.error('Error in getting sources:', error);
           callback({ video: null });
         });
 
-
       });
 });
   mainWindow.webContents.openDevTools();
+
+  // ipcMain.on('source-screen', (_event, value) => {
+  //   console.log(value, 'Received value from source-screen event');
+  //   screenId = value;
+  // });
+
 
 function getSourceFromRender() {
   ipcMain.on('get-source', (events, arg)=> {
@@ -85,6 +106,8 @@ function getSourceFromRender() {
   })
 }
 getSourceFromRender();
+
+
 
   // ipcMain.on('show-popup', (events) => { 
   //   events.returnValue = 'show-popup-invoked from main'

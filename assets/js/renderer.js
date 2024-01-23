@@ -26,23 +26,27 @@ window.api.source(0);
 
 
 window.api.showPopup((sources) => {
-	// console.log(sources);
 	let source;
 	screenPickerShow(sources, async (id) => {
 		console.log(id);
 		try {
-			source = sources.find(source => source.id === id);
+			source = sources.find(source => source.id == id);
+			sendSource(source);
 			if (!source) {
-				return reject('none');
+				return 'none';
 			}
 		}
 		catch (err) {
-			reject(err);
+			console.log(err.innerText)
 		}
 	}, {});
 	
-	return source;
 })
+
+function sendSource(source) {
+  window.api.sourceScreen(source.id); 
+  console.log('sent to source');
+}
 
 // Set event listeners for the start, stop and openSettings buttons
 // openSettingsBtn.addEventListener("click", openPreferences, false);
@@ -143,6 +147,7 @@ function screenPickerShow(sources, onselect) {
 		wrapper.append(label);
 		item.append(wrapper);
 		item.onclick = () => {
+			console.log('itemclicked');
 			onselect(source.id);
 			MicroModal.close('electron-screen-picker');
 		};
