@@ -30,15 +30,16 @@
 
     <!-- Webview -->
 
-    <iframe
+    <webview
+      allow="camera; microphone,"
       autosize="on"
-      src="https://meet.google.com/goq-omfh-gri"
+      src="https://meet.google.com/vfw-mjnc-cqm"
       id="webview"
-      data-home="https://meet.google.com/goq-omfh-gri"
+      data-home="https://meet.google.com/vfw-mjnc-cqm"
       preload= ${__dirname}/preload.js
       height="50%"
       width="100%"
-    ></iframe>
+    ></webview>
 
     <div class="modal micromodal-slide" id="electron-screen-picker" aria-hidden="true">
       <div class="modal__overlay" tabindex="-1" data-micromodal-close>

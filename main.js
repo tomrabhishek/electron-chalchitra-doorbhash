@@ -4,6 +4,8 @@ const util = require("electron-util");
 const { desktopCapturer, BrowserWindow, BrowserView } = require('electron');
 const socket = require('socket.io-client')('http://localhost:3000');
 const IS_OSX = process.platform === 'darwin';
+// const fs = require('fs-extra');
+// const appName = app.getName();
 
 // const path = require('path');
 // // Get app directory
@@ -12,7 +14,7 @@ const IS_OSX = process.platform === 'darwin';
 
 // fs.unlink(getAppPath, () => {
 //   // callback
-//   alert("App data cleared");
+//   // alert("App data cleared");
 //   // You should relaunch the app after clearing the app settings.
 //   app.relaunch();
 //   // app.exit();
@@ -33,7 +35,6 @@ app.whenReady().then(() => {
     { urls: ['*://*/*'] },
     (details, callback) => {
       const responseHeaders = Object.assign({}, details.responseHeaders);
-
       if (responseHeaders['X-Frame-Options'] || responseHeaders['x-frame-options']) {
         delete responseHeaders['X-Frame-Options'];
         delete responseHeaders['x-frame-options'];
@@ -42,9 +43,43 @@ app.whenReady().then(() => {
       callback({ cancel: false, responseHeaders });
     }
   );
-  mainWindow.loadFile("index.html");
-  // mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam")
+
+  // mainWindow.loadFile("index.html");
+  mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam");
+  
+  mainWindow.webContents.on("did-finish-load", async function() {
+    // const sources = await desktopCapturer.getSources({ types: ["window", "screen"] });
+    // console.log(sources);
+    mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+        // if (permission === 'media') {
+          // Handle media permission request
+          console.log(permission)
+          callback(true); // You might want to customize this based on your requirements
+        // } else {
+        //   callback(false);
+        // }
+      });
+    mainWindow.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
+        desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
+            console.log(request,sources[0])
+        //   mainWindow.webContents.send("screen-share",sources[0]);
+          callback({video:sources[0],enableLocalEcho:false})
+        }).catch((error) => {
+          console.error('Error in getting sources:', error);
+          callback({ video: null });
+        });
+      });
+});
+
   mainWindow.webContents.openDevTools();
+  mainWindow.webContents.on('did-finish-load', () => {
+    // Access the webview's document object after the webview has finished loading
+    const webViewContents = mainWindow.webContents;
+    webViewContents.executeJavaScript(`
+      const webViewDocument = document;
+      console.log('Document of webview:', webViewDocument);
+    `);
+  });
 
   // createOverlayDrawingWindow();
 
@@ -123,7 +158,6 @@ app.whenReady().then(() => {
     // Handle the data as needed
   });
 
-
   // Menu (for standard keyboard shortcuts)
   const menu = require("./src/menu");
   const template = menu.createTemplate(app.name);
@@ -190,7 +224,7 @@ app.on("window-all-closed", () => {
 });
 
 ipcMain.handle('electronMain:openScreenSecurity', () => util.openSystemPreferences('security', 'Privacy_ScreenCapture'));
-ipcMain.handle('electronMain:getScreenAccess', () => !IS_OSX || systemPreferences.getMediaAccessStatus('screen') === 'granted');
+ipcMain.handle('electronMain:getScreenAccess', () => IS_OSX || systemPreferences.getMediaAccessStatus('screen') === 'granted');
 ipcMain.handle('electronMain:screen:getSources', () => {
     return desktopCapturer.getSources({types: ['window', 'screen']}).then(async sources => {
         return sources.map(source => {
@@ -199,7 +233,6 @@ ipcMain.handle('electronMain:screen:getSources', () => {
         });
     });
 });
-
 ipcMain.on('share-screen', (events) => {
   console.log(events);
 });
