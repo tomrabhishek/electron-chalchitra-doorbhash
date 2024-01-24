@@ -7,7 +7,7 @@ const { desktopCapturer, BrowserWindow, BrowserView } = require('electron');
 // const fs = require('fs-extra');
 // const appName = app.getName();
 
-// const path = require('path');
+const path = require('path');
 // // Get app directory
 // // on OSX it's /Users/Yourname/Library/Application Support/AppName
 // const getAppPath = path.join(app.getPath('appData'), appName);
@@ -20,17 +20,61 @@ const { desktopCapturer, BrowserWindow, BrowserView } = require('electron');
 //   // app.exit();
 // });
 
+app.userAgentFallback = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+app.commandLine.appendSwitch('disable-throttle-non-visible-cross-origin-iframes', true);
+
+function createWindow() {
+  console.log(__dirname);
+  const mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      nodeIntegration: false,
+      preload: path.join(__dirname, '../electron-webview/preload.js'),
+      webSecurity: false,
+    },
+  });
+
+  mainWindow.openDevTools();
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived(
+    { urls: ['*://*/*'] },
+    (details, callback) => {
+      const responseHeaders = Object.assign({}, details.responseHeaders);
+
+      if (responseHeaders['X-Frame-Options'] || responseHeaders['x-frame-options']) {
+        delete responseHeaders['X-Frame-Options'];
+        delete responseHeaders['x-frame-options'];
+      }
+
+      callback({ cancel: false, responseHeaders });
+    }
+  );
+  mainWindow.loadFile('index.html');
+  
+
+
+  ipcMain.on('window-data', function (event, message) {
+    console.log(message);
+    console.log('dom is successfully loaded');
+  });
+}
+
+app.commandLine.appendSwitch('disable-site-isolation-trials');
+
+
 app.whenReady().then(() => {
   // Main window
   // In the preload script.
   console.log("1");
-  ipcMain.handle('ping', () => 'pong');
-  const window = require("./src/window");
-  mainWindow = window.createBrowserWindow(app);
+  // ipcMain.handle('ping', () => 'pong');
+  // const window = require("./src/window");
+  // mainWindow = window.createBrowserWindow(app);
   // try {
   //   require('electron-reloader')(module);
   // } catch {}
   // Option 1: Uses Webtag and load a custom html file with external content
+  createWindow();
 
   // mainWindow.webContents.session.webRequest.onHeadersReceived(
   //   { urls: ['*://*/*'] },
@@ -45,10 +89,13 @@ app.whenReady().then(() => {
   //   }
   // );
 
-  let screenId;
-  mainWindow.loadFile("index.html");
-  // mainWindow.loadURL("https://meet.google.com/gvj-fpda-jam");
+  // mainWindow.loadFile("index.html");
+  // // mainWindow.loadURL("https://meet.google.com/xor-sdzy-rvv");
 
+  // ipcMain.on('window-data', function (event, message) {
+  //   console.log(message);
+  //   console.log('dom is successfully loaded');
+  // });
   mainWindow.webContents.on("did-finish-load", async function() {
     // const sources = await desktopCapturer.getSources({ types: ["window", "screen"] });
     // console.log(sources);
@@ -93,7 +140,9 @@ app.whenReady().then(() => {
 
       });
 });
-  mainWindow.webContents.openDevTools();
+ 
+
+
 
   // ipcMain.on('source-screen', (_event, value) => {
   //   console.log(value, 'Received value from source-screen event');
@@ -101,12 +150,12 @@ app.whenReady().then(() => {
   // });
 
 
-function getSourceFromRender() {
-  ipcMain.on('get-source', (events, arg)=> {
-    console.log('from-rendereerr',arg);
-  })
-}
-getSourceFromRender();
+// function getSourceFromRender() {
+//   ipcMain.on('get-source', (events, arg)=> {
+//     // console.log('from-rendereerr',arg);
+//   })
+// }
+// getSourceFromRender();
 
 
 
@@ -232,4 +281,10 @@ app.on("window-all-closed", () => {
 //         });
 //     });
 // });
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
 

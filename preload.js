@@ -34,19 +34,31 @@ contextBridge.exposeInMainWorld('api', windowApi);
 //   if(screen_share){
 //     screen_share.setAttribute('onclick', 'function() {alert("buttonCLicked")}');
 //   }
-// },300);
+// },300);\
 
-window.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("click", function (e) {
+  var clickedElement = e.target;
+  console.log("click",clickedElement);
 
-//  const screen_share = document.querySelector("[jsname='hNGZQc']");
-// const iframe = document.getElementById("webview");
-// console.log(iframe);
+  // Send an IPC message to the main process
+  ipcRenderer.send("window-data","clickedElement");
+});
 
-// const screen_share = document.querySelector(".VfPpkd-LgbsSe");
-// setInterval(() => {
-//   screen_share.setAttribute('onclick', 'function() {alert("buttonCLicked")}');
-// },300);
-//  console.log(screen_share);
+document.addEventListener("DOMContentLoaded", () => {
+const iframe = document.getElementById("webview");
+console.log(iframe);
+iframe.addEventListener('load', function() {
+    console.log(document.querySelectorAll("[jsname='YPqjbf']"));
+    const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+    console.log(iframeDocument.getElementsByClassName("ye1V6b"));
+    iframeDocument.addEventListener('mouseup', function (e) {
+        var clickedElement = e.target;
+        console.log("click",clickedElement);
+      ipcRenderer.send("window-data", "clickedElement");
+    });
+    console.log("DOM content loaded inside iframe");
+});
+console.log("dom content loaded 1")
 
 //  var e = setInterval(() => {
 //   console.log("RUNNING: ", " screen share");
@@ -68,6 +80,7 @@ window.addEventListener("DOMContentLoaded", () => {
 //   sendButtonClickEvent();
 //   console.log("clicked");
 //  }, true);
+  ipcRenderer.send("window-data", "data");
 });
 
 // ipcRenderer.on('SEND_SCREEN_SHARE_SOURCES', async (event, sources) => {

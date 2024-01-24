@@ -6,11 +6,11 @@
     <script defer src="assets/js/renderer.js"></script>
     <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
     <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'">
+
     <title>Chalchitra Doorbhash</title>
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="script-src 'self' 'unsafe-inline';"
-    />
   </head>
   <body>
     <!-- Topbar -->
@@ -26,16 +26,13 @@
 
     <!-- Webview -->
 
-    <webview
-    style="height: 100%;"
+    <iframe
+      allow="camera; microphone; display-capture"
+      style="height: 100%; width: 100%;"
       autosize="on"
-      src="https://meet.google.com/vfw-mjnc-cqm"
+      src="https://meet.google.com/xor-sdzy-rvv"
       id="webview"
-      data-home="https://meet.google.com/vfw-mjnc-cqm"
-      preload= ${__dirname}/preload.js
-      height="50%"
-      width="100%"
-    ></webview>
+    ></iframe>
 
     <div class="modal micromodal-slide" id="electron-screen-picker" aria-hidden="true">
       <div class="modal__overlay" tabindex="-1" data-micromodal-close>

@@ -13,6 +13,35 @@
 const openSettingsBtn = document.querySelector('#system-preferences');
 const screenPicker = document.querySelector('#electron-screen-picker');
 
+
+// event controll
+
+
+// setInterval(() => {
+
+// console.log(document);
+// const iframe = document.getElementById("webview");
+// console.log(iframe);
+// iframe.addEventListener('load', function() {
+//     console.log(document.querySelectorAll("[jsname='YPqjbf']"));
+//     const iframeDocument = gmeetIframe.contentDocument || gmeetIframe.contentWindow.document;
+//     console.log(iframeDocument.getElementsByClassName("ye1V6b"));
+//     iframeDocument.addEventListener('mouseup', function (e) {
+//         var clickedElement = e.target;
+//         console.log("click",clickedElement);
+//       ipcRenderer.send("window-data", "clickedElement");
+//     });
+
+//     console.log("DOM content loaded inside iframe");
+// });
+// let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+// // console.log(iframeDocument);
+// let bodyElement = iframeDocument.body;
+// // console.log(bodyElement);
+// const screen_share = document.querySelector("[jsname='hNGZQc']");
+// // console.log(screen_share);
+// }, 3000);
+
 // const displayMediaOptions = {
 // 	video: {
 // 		displaySurface: "window",
