@@ -50,9 +50,20 @@ console.log(iframe);
 iframe.addEventListener('load', function() {
     console.log(document.querySelectorAll("[jsname='YPqjbf']"));
     const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+
+    // const share_button = iframeDocument.querySelector("[jsname='hNGZQc']");
+    // console.log(share_button);
+    
+
     console.log(iframeDocument.getElementsByClassName("ye1V6b"));
     iframeDocument.addEventListener('mouseup', function (e) {
+      console.log(e);
         var clickedElement = e.target;
+   
+        // clickedElement.addEventListener('click', function(){
+
+        //   console.log('clicked share....')
+        // });
         console.log("click",clickedElement);
       ipcRenderer.send("window-data", "clickedElement");
     });

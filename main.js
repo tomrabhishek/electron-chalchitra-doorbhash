@@ -1,13 +1,13 @@
 // Electron
-const { app, Menu, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, desktopCapturer } = require("electron");
+const path = require('path');
 // const util = require("electron-util");
-const { desktopCapturer, BrowserWindow, BrowserView } = require('electron');
 // const socket = require('socket.io-client')('http://localhost:3000');
 // const IS_OSX = process.platform === 'darwin';
 // const fs = require('fs-extra');
 // const appName = app.getName();
 
-const path = require('path');
+
 // // Get app directory
 // // on OSX it's /Users/Yourname/Library/Application Support/AppName
 // const getAppPath = path.join(app.getPath('appData'), appName);
@@ -24,7 +24,6 @@ app.userAgentFallback = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWe
 app.commandLine.appendSwitch('disable-throttle-non-visible-cross-origin-iframes', true);
 
 function createWindow() {
-  console.log(__dirname);
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -51,51 +50,7 @@ function createWindow() {
     }
   );
   mainWindow.loadFile('index.html');
-  
 
-
-  ipcMain.on('window-data', function (event, message) {
-    console.log(message);
-    console.log('dom is successfully loaded');
-  });
-}
-
-app.commandLine.appendSwitch('disable-site-isolation-trials');
-
-
-app.whenReady().then(() => {
-  // Main window
-  // In the preload script.
-  console.log("1");
-  // ipcMain.handle('ping', () => 'pong');
-  // const window = require("./src/window");
-  // mainWindow = window.createBrowserWindow(app);
-  // try {
-  //   require('electron-reloader')(module);
-  // } catch {}
-  // Option 1: Uses Webtag and load a custom html file with external content
-  createWindow();
-
-  // mainWindow.webContents.session.webRequest.onHeadersReceived(
-  //   { urls: ['*://*/*'] },
-  //   (details, callback) => {
-  //     const responseHeaders = Object.assign({}, details.responseHeaders);
-  //     if (responseHeaders['X-Frame-Options'] || responseHeaders['x-frame-options']) {
-  //       delete responseHeaders['X-Frame-Options'];
-  //       delete responseHeaders['x-frame-options'];
-  //     }
-
-  //     callback({ cancel: false, responseHeaders });
-  //   }
-  // );
-
-  // mainWindow.loadFile("index.html");
-  // // mainWindow.loadURL("https://meet.google.com/xor-sdzy-rvv");
-
-  // ipcMain.on('window-data', function (event, message) {
-  //   console.log(message);
-  //   console.log('dom is successfully loaded');
-  // });
   mainWindow.webContents.on("did-finish-load", async function() {
     // const sources = await desktopCapturer.getSources({ types: ["window", "screen"] });
     // console.log(sources);
@@ -140,6 +95,51 @@ app.whenReady().then(() => {
 
       });
 });
+  
+
+
+  ipcMain.on('window-data', function (event, message) {
+    console.log(message);
+    console.log('dom is successfully loaded');
+  });
+}
+
+app.commandLine.appendSwitch('disable-site-isolation-trials');
+
+
+app.whenReady().then(() => {
+  // Main window
+  // In the preload script.
+  // ipcMain.handle('ping', () => 'pong');
+  // const window = require("./src/window");
+  // mainWindow = window.createBrowserWindow(app);
+  // try {
+  //   require('electron-reloader')(module);
+  // } catch {}
+  // Option 1: Uses Webtag and load a custom html file with external content
+  createWindow();
+
+  // mainWindow.webContents.session.webRequest.onHeadersReceived(
+  //   { urls: ['*://*/*'] },
+  //   (details, callback) => {
+  //     const responseHeaders = Object.assign({}, details.responseHeaders);
+  //     if (responseHeaders['X-Frame-Options'] || responseHeaders['x-frame-options']) {
+  //       delete responseHeaders['X-Frame-Options'];
+  //       delete responseHeaders['x-frame-options'];
+  //     }
+
+  //     callback({ cancel: false, responseHeaders });
+  //   }
+  // );
+
+  // mainWindow.loadFile("index.html");
+  // // mainWindow.loadURL("https://meet.google.com/xor-sdzy-rvv");
+
+  // ipcMain.on('window-data', function (event, message) {
+  //   console.log(message);
+  //   console.log('dom is successfully loaded');
+  // });
+
  
 
 
@@ -240,13 +240,6 @@ app.whenReady().then(() => {
   //   // Handle the data as needed
   // });
 
-  // Menu (for standard keyboard shortcuts)
-  const menu = require("./src/menu");
-  const template = menu.createTemplate(app.name);
-  const builtMenu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(builtMenu);
-
-  // Print function (if enabled)
 });
 
 
