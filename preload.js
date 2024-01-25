@@ -48,14 +48,14 @@ document.addEventListener("DOMContentLoaded", () => {
 const iframe = document.getElementById("webview");
 console.log(iframe);
 iframe.addEventListener('load', function() {
-    console.log(document.querySelectorAll("[jsname='YPqjbf']"));
+    // console.log(document.querySelectorAll("[jsname='YPqjbf']"));
     const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
 
-    // const share_button = iframeDocument.querySelector("[jsname='hNGZQc']");
-    // console.log(share_button);
+    const share_button = iframeDocument.querySelector("[jsname='hNGZQc']");
+    console.log(share_button);
     
 
-    console.log(iframeDocument.getElementsByClassName("ye1V6b"));
+    // console.log(iframeDocument.getElementsByClassName("ye1V6b"));
     iframeDocument.addEventListener('mouseup', function (e) {
       console.log(e);
         var clickedElement = e.target;

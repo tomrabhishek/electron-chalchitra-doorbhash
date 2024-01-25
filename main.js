@@ -64,6 +64,7 @@ function createWindow() {
         // }
       });
     mainWindow.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
+      console.log(request, 'request got successfully.........');
       const waitForValue = (valueCallback) => {
         ipcMain.on('source-screen', (_event, value) => {
           console.log(value, 'Received value from source-screen event');
