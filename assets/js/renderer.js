@@ -1,58 +1,37 @@
-// const information = document.getElementById('info')
-// information.innerText = `  preload sending versions.chrome() (v${versions.chrome()})`;
-
-// const { ipcRenderer, contextBridge } = require("electron");
-
-// const func = async () => {
-//   const response = await window.versions.ping()
-//   console.log(response) // prints out 'pong'
-// }
-
-// func()
-
 const openSettingsBtn = document.querySelector('#system-preferences');
 const screenPicker = document.querySelector('#electron-screen-picker');
+let iframe = null; 
 
+const openIframeButton = document.getElementById("toggleIframeBtn");
+const closeIframeButton = document.getElementById("closeIframeBtn");
+const openDashboard = document.getElementById("openDashboard");
 
-// event controll
+closeIframeButton.style.display = "none";
 
+  window.api.weblink((weblink) => {
+	let brightchampsLink = weblink;
+	openIframe(brightchampsLink);
+	// openIframeButton.style.display = "none";
+	closeIframeButton.style.display = "inline-block";
+	openDashboard.style.display = "none";
+})
 
-// setInterval(() => {
+openIframeButton.addEventListener("click", function () {
+	let meetLink = "https://meet.google.com/xor-sdzy-rvv";
+	openIframe(meetLink)
+	openIframeButton.style.display = "none";
+    closeIframeButton.style.display = "inline-block";
+	openDashboard.style.display = "none";
+  });
 
-// console.log(document);
-// const iframe = document.getElementById("webview");
-// console.log(iframe);
-// iframe.addEventListener('load', function() {
-//     console.log(document.querySelectorAll("[jsname='YPqjbf']"));
-//     const iframeDocument = gmeetIframe.contentDocument || gmeetIframe.contentWindow.document;
-//     console.log(iframeDocument.getElementsByClassName("ye1V6b"));
-//     iframeDocument.addEventListener('mouseup', function (e) {
-//         var clickedElement = e.target;
-//         console.log("click",clickedElement);
-//       ipcRenderer.send("window-data", "clickedElement");
-//     });
-
-//     console.log("DOM content loaded inside iframe");
-// });
-// let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-// // console.log(iframeDocument);
-// let bodyElement = iframeDocument.body;
-// // console.log(bodyElement);
-// const screen_share = document.querySelector("[jsname='hNGZQc']");
-// // console.log(screen_share);
-// }, 3000);
-
-// const displayMediaOptions = {
-// 	video: {
-// 		displaySurface: "window",
-// 	},
-// 	audio: false,
-// };
+closeIframeButton.addEventListener("click", function () {
+    closeIframe();
+	openIframeButton.style.display = "inline-block";
+    closeIframeButton.style.display = "none";
+	openDashboard.style.display = "inline-block";
+});
 
 window.api.source(0);
-// console.log(window.api.showPopup());
-// console.log(window.api.showPopup())
-
 
 window.api.showPopup((sources) => {
 	let source;
@@ -77,84 +56,11 @@ function sendSource(source) {
   console.log('sent to source');
 }
 
-// Set event listeners for the start, stop and openSettings buttons
-// openSettingsBtn.addEventListener("click", openPreferences, false);
-
-// async function startCapture() {
-// 	try {
-// 		video.srcObject = await navigator.mediaDevices.getDisplayMedia(
-// 			displayMediaOptions
-// 		);
-// 		startBtn.classList = 'hidden';
-// 		stopBtn.classList = '';
-// 	} catch (err) {
-// 		console.error(err);
-// 	}
-// }
-
-// function stopCapture(evt) {
-// 	if (!video.srcObject) return;
-	
-// 	let tracks = video.srcObject.getTracks();
-
-// 	tracks.forEach((track) => track.stop());
-// 	video.srcObject = null;
-// 	startBtn.classList = '';
-// 	stopBtn.classList = 'hidden';
-// }
-
-// function openPreferences() {
-// 	main.openScreenSecurity();
-// }
-
 let screenPickerOptions = {
 	system_preferences: false
 };
 
-// // function getDisplayMedia() {
-// // 	if (main.isOSX()) {
-// // 		screenPickerOptions.system_preferences = true;
-// // 	}
-
-// // 	return new Promise(async (resolve, reject) => {
-// // 		let has_access = await main.getScreenAccess();
-// // 		if (!has_access) {
-// // 			return reject('none');
-// // 		}
-
-// // 		try {
-// // 			const sources = await main.getScreenSources();
-// // 			screenPickerShow(sources, async (id) => {
-// // 				try {
-// // 					const source = sources.find(source => source.id === id);
-// // 					if (!source) {
-// // 						return reject('none');
-// // 					}
-
-// // 					const stream = await window.navigator.mediaDevices.getUserMedia({
-// // 						audio: false,
-// // 						video: {
-// // 							mandatory: {
-// // 								chromeMediaSource: 'desktop',
-// // 								chromeMediaSourceId: source.id
-// // 							}
-// // 						}
-// // 					});
-// // 					resolve(stream);
-// // 				}
-// // 				catch (err) {
-// // 					reject(err);
-// // 				}
-// // 			}, {});
-// // 		}
-// // 		catch (err) {
-// // 			reject(err);
-// // 		}
-// // 	});
-// // }
-
 function screenPickerShow(sources, onselect) {
-	// console.log(sources);
 	const list = document.querySelector('#sources');
 	list.innerHTML = '';
 
@@ -188,4 +94,22 @@ function screenPickerShow(sources, onselect) {
 	}
 
 	MicroModal.show('electron-screen-picker');
+}
+
+function openIframe(link) {
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'webview';
+		iframe.style = "height: 100%; width: 100%;";
+		iframe.allow = "camera; microphone; display-capture";
+        document.body.appendChild(iframe);
+    }
+    iframe.src = link;
+}
+
+function closeIframe() {
+    if (iframe) {
+        document.body.removeChild(iframe);
+        iframe = null;
+    }
 }
